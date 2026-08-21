@@ -16,7 +16,7 @@ function findSquare(latitude: number, longitude: number): string | null {
 // about the communal map.
 type MapState = {
     users: Record<string, string>;
-    squares: Record<string, string>;
+    territory: Record<string, string>;
 };
 
 
@@ -55,17 +55,17 @@ export class MyDurableObject extends DurableObject<Env> {
 		if (!state) {
 		    state = {
 		        users: {},
-		        squares: {},
+		        territory: {},
 		    };
 		}
 
 		if (squareId) {
-			const oldClientId = state.squares[squareId];
+			const oldClientId = state.territory[squareId];
 		    if (oldClientId && oldClientId !== clientId) {
 		        delete state.users[oldClientId];
 		    }
 			state.users[clientId] = squareId;
-    		state.squares[squareId] = clientId;
+    		state.territory[squareId] = clientId;
 		}
 
 		await this.ctx.storage.put("mapState", state);
@@ -85,7 +85,7 @@ export class MyDurableObject extends DurableObject<Env> {
 	
 	    return state ?? {
 	        users: {},
-	        squares: {},
+	        territory: {},
 	    };
 	}
 }
@@ -144,6 +144,7 @@ export default {
                 {
                     headers: {
                         "Content-Type": "application/json",
+    					"Access-Control-Allow-Origin": "*",
                     },
                 }
             );
@@ -160,6 +161,7 @@ export default {
 		        {
 		            headers: {
 		                "Content-Type": "application/json",
+    					"Access-Control-Allow-Origin": "*",
 		            },
 		        }
 		    );
