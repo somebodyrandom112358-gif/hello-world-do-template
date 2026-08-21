@@ -88,6 +88,10 @@ export class MyDurableObject extends DurableObject<Env> {
 	        territory: {},
 	    };
 	}
+
+	async resetState(): Promise<void> {
+	    await this.ctx.storage.delete("mapState");
+	}
 }
 
 
@@ -162,6 +166,26 @@ export default {
 		            headers: {
 		                "Content-Type": "application/json",
     					"Access-Control-Allow-Origin": "*",
+		            },
+		        }
+		    );
+		}
+
+		if (url.pathname === "/reset" && request.method === "POST") {
+		    const id = env.MY_DURABLE_OBJECT.idFromName("communal-map");
+		    const stub = env.MY_DURABLE_OBJECT.get(id);
+		
+		    await stub.resetState();
+		
+		    return new Response(
+		        JSON.stringify({
+		            success: true,
+		            message: "Map state reset",
+		        }),
+		        {
+		            headers: {
+		                "Content-Type": "application/json",
+		                "Access-Control-Allow-Origin": "*",
 		            },
 		        }
 		    );
