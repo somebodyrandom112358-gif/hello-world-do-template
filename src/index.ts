@@ -1,5 +1,16 @@
 import { DurableObject } from "cloudflare:workers";
 
+function findSquare(latitude: number, longitude: number): string | null {
+	const row = Math.floor((latitude - 29.7604) / 0.0145);
+	const col = Math.floor((longitude + 97.7431) / 0.0177);
+
+	if (row < 0 || row >= 209 || col < 0 || col >= 135) {
+		return null;
+	}
+
+	return `square-${row}-${col}`;
+}
+
 export class MyDurableObject extends DurableObject<Env> {
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
@@ -9,11 +20,20 @@ export class MyDurableObject extends DurableObject<Env> {
 		clientId: string,
 		latitude: number,
 		longitude: number,
-	): Promise<{ success: boolean; clientId: string; latitude: number; longitude: number }> {
+	): Promise<{
+		success: boolean;
+		clientId: string;
+		latitude: number;
+		longitude: number;
+		squareId: string | null;
+	}> {
+		const squareId = findSquare(latitude, longitude);
+
 		console.log("Received location:", {
 			clientId,
 			latitude,
 			longitude,
+			squareId,
 		});
 
 		return {
@@ -21,6 +41,7 @@ export class MyDurableObject extends DurableObject<Env> {
 			clientId,
 			latitude,
 			longitude,
+			squareId,
 		};
 	}
 }
