@@ -60,13 +60,9 @@ export class MyDurableObject extends DurableObject<Env> {
 		}
 
 		if (squareId) {
-		    const oldSquareId = state.users[clientId];
 			const oldClientId = state.squares[squareId];
 		    if (oldClientId && oldClientId !== clientId) {
 		        delete state.users[oldClientId];
-		    }
-		    if (oldSquareId && oldSquareId !== squareId) {
-		        delete state.squares[oldSquareId];
 		    }
 			state.users[clientId] = squareId;
     		state.squares[squareId] = clientId;
