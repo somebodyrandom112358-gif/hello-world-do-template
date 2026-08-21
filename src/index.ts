@@ -17,6 +17,7 @@ function findSquare(latitude: number, longitude: number): string | null {
 type MapState = {
     users: Record<string, string>;
     territory: Record<string, string>;
+	colors: Record<string, string>;
 };
 
 
@@ -56,6 +57,7 @@ export class MyDurableObject extends DurableObject<Env> {
 		    state = {
 		        users: {},
 		        territory: {},
+				colors: {},
 		    };
 		}
 
@@ -80,12 +82,24 @@ export class MyDurableObject extends DurableObject<Env> {
         };
     }
 
+	async setColor(
+	    clientId: string,
+	    color: string
+	): Promise<void> {
+	    const state = await this.getState();
+	
+	    state.colors[clientId] = color;
+	
+	    await this.ctx.storage.put("mapState", state);
+	}
+
 	async getState(): Promise<MapState> {
 	    const state = await this.ctx.storage.get<MapState>("mapState");
 	
 	    return state ?? {
 	        users: {},
 	        territory: {},
+			colors: {},
 	    };
 	}
 
@@ -176,6 +190,54 @@ export default {
 		            headers: {
 		                "Content-Type": "application/json",
     					"Access-Control-Allow-Origin": "*",
+		            },
+		        }
+		    );
+		}
+
+		if (url.pathname === "/color" && request.method === "POST") {
+		    const body = await request.json();
+		
+		    const clientId = body.clientId;
+		    const color = body.color;
+
+			const isValidHex = /^#[0-9A-Fa-f]{6}$/.test(color);
+		
+		    if (
+		        typeof clientId !== "string" ||
+			    typeof color !== "string" ||
+			    !isValidHex
+		    ) {
+		        return new Response(
+		            JSON.stringify({
+		                success: false,
+		                error: "Invalid clientId or color",
+		            }),
+		            {
+		                status: 400,
+		                headers: {
+		                    "Content-Type": "application/json",
+		                    "Access-Control-Allow-Origin": "*",
+		                },
+		            }
+		        );
+		    }
+		
+		    const id = env.MY_DURABLE_OBJECT.idFromName("communal-map");
+		    const stub = env.MY_DURABLE_OBJECT.get(id);
+		
+		    await stub.setColor(clientId, color);
+		
+		    return new Response(
+		        JSON.stringify({
+		            success: true,
+		            clientId,
+		            color,
+		        }),
+		        {
+		            headers: {
+		                "Content-Type": "application/json",
+		                "Access-Control-Allow-Origin": "*",
 		            },
 		        }
 		    );
