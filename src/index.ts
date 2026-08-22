@@ -1,10 +1,10 @@
 import { DurableObject } from "cloudflare:workers";
 
 function findSquare(latitude: number, longitude: number): string | null {
-    const row = Math.floor((latitude - 29.7604) / 0.0145);
-    const col = Math.floor((longitude + 97.7431) / 0.0177);
+	const row = Math.floor((latitude - 29.4241) / 0.0145);
+    const col = Math.floor((longitude + 98.4936) / 0.0177);
 
-    if (row < 0 || row >= 209 || col < 0 || col >= 135) {
+    if (row < 0 || row >= 232 || col < 0 || col >= 178) {
         return null;
     }
 
